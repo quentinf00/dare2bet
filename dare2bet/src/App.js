@@ -81,7 +81,7 @@ class NameForm extends React.Component {
 
   updateResults() {
     console.log("[+] updateResults");
-    fetch("https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/get_result")
+    return fetch("https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/get_result")
     .then(response => response.json())
     .then(myJson => this.setState({ results: myJson }))
     .catch(error => console.error(error));
@@ -113,7 +113,7 @@ class NameForm extends React.Component {
       return (
         <div>
         <h2 onClick={this.handleClick}> {this.state.value}</h2>
-        <Quiz playerName={this.state.value} updateResult={this.updateResults}/>
+        <Quiz playerName={this.state.value} updateResult={this.updateResults} results={this.state.results}/>
         <br/>
             <PlayerList players={this.state.players}/>
             <Results data={this.state.results}/>
@@ -152,7 +152,6 @@ class Results extends React.Component {
       )
     }
     }
-
   }
 
 class PlayerList extends React.Component {
@@ -172,7 +171,10 @@ class Quiz extends React.Component {
       this.sayYes = this.sayYes.bind(this);
       this.sayNo = this.sayNo.bind(this);
       this.saySomething = this.saySomething.bind(this);
+      this.updateLoop = this.updateLoop.bind(this);
+      this.sleep = this.sleep.bind(this);
       this.updateResults = props.updateResult
+      this.results = props.results
   }
 
   componentDidMount() {
@@ -184,11 +186,22 @@ class Quiz extends React.Component {
 
 }
 
+sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+updateLoop() {
+
+  this.updateResults().then(
+    data => {if (this.results.everybody_answered) {return;}
+    this.sleep(3000).then(this.updateLoop)})
+}
+
 saySomething(answer) {
   this.setState({answered: true})
   fetch("https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/post_answer?player_name=" + this.state.playerName + "&answer=" + answer)
   .then(response => response.json())
-  .then(data => this.updateResults())
+  .then(data => this.updateLoop())
   .then(myJson => console.log(myJson))
   .catch(error => console.error(error));
 }
