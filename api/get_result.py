@@ -31,6 +31,7 @@ def run(event, context):
             'should_not_drink': []
             }
         del state['answers']
+        del state['question']
         dump_state(s3, state)
 
     response_headers = {
