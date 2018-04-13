@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer':
+    3b547a1a-c1d5-4241-b890-ba66513e6aaf:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 360
+        'y': 120
+      z: 1
+      embeds: []
+    4c1e9986-13a4-4723-b897-67aa29e2fd3b:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 250
+        'y': 120
+      z: 1
+      embeds: []
+      dependson:
+        - 3b547a1a-c1d5-4241-b890-ba66513e6aaf
+    53c3258e-4d50-4735-a7f5-8c343fb20f92:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 490
+        'y': 120
+      z: 1
+      embeds: []
+      dependson:
+        - 3b547a1a-c1d5-4241-b890-ba66513e6aaf
+Resources:
+  WebsiteBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: drinking-game-raph-hadr-quent
+      WebsiteConfiguration:
+        IndexDocument: index.html
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3b547a1a-c1d5-4241-b890-ba66513e6aaf
+  S3BP31GCW:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+            Resource:
+              - 'arn:aws:s3:::drinking-game-raph-hadr-quent/*'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 4c1e9986-13a4-4723-b897-67aa29e2fd3b
+    DependsOn:
+      - WebsiteBucket
+  WebsiteCloudfront:
+    Type: 'AWS::CloudFront::Distribution'
+    DependsOn:
+      - WebsiteBucket
+    Properties:
+      DistributionConfig:
+        Comment: Cloudfront Distribution pointing to S3 bucket
+        Origins:
+          - DomainName: drinking-game-raph-hadr-quent.s3-website.eu-central-1.amazonaws.com
+            Id: 1
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
+        Enabled: true
+        HttpVersion: http2
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: 1
+        # Handle ReactJs routing
+        CustomErrorResponses:
+        - ErrorCachingMinTTL: 0
+          ErrorCode: 404
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+        - ErrorCachingMinTTL: 0
+          ErrorCode: 403
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 53c3258e-4d50-4735-a7f5-8c343fb20f92
