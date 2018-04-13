@@ -7,7 +7,8 @@ def run(event, context):
 
     s3 = boto3.client('s3')
     state = load_state(s3)
-    state['players'] = state.get('players', []) + [player_name]
+    if player_name not in state.get('players', []):
+        state['players'] = state.get('players', []) + [player_name]
     dump_state(s3, state)
 
     response_headers = {
