@@ -3,13 +3,35 @@ import json
 
 
 def run(event, context):
-    player_name = event['queryStringParameters']['player_name']
 
     s3 = boto3.client('s3')
     state = load_state(s3)
-    if player_name not in state.get('players', []):
-        state['players'] = state.get('players', []) + [player_name]
-    dump_state(s3, state)
+    answers = state.get('answers', {})
+    players = state.get('players', [])
+
+    done = True
+    responded = []
+    waiting_for_response = []
+    for player in players:
+        if player in answers:
+            responded.append(player)
+        else:
+            done = False
+            waiting_for_response.append(player)
+
+    if not done:
+        result = {
+            'everybody_answered': done,
+            'already_responded': responded,
+            'waiting_for_response': waiting_for_response
+            }
+    else:
+        result = {
+            'should_drink': responded,
+            'should_not_drink': []
+            }
+        del state['answers']
+        dump_state(s3, state)
 
     response_headers = {
         'Access-Control-Allow-Origin': '*',
@@ -19,10 +41,8 @@ def run(event, context):
     return {
         'headers': response_headers,
         'statusCode': 200,
-        "body": json.dumps(state)
+        "body": json.dumps(result)
     }
-
-
 
 
 def load_state(s3):
