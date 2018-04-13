@@ -1,14 +1,7 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
-
-
 class App extends Component {
-
-//  submitName = (data) => {
-  //  console.log(data)
-//  }
 
   render() {
     return (
@@ -16,24 +9,42 @@ class App extends Component {
         <header className="App-header">
           <h1 className="App-title">Dare to Bet</h1>
         </header>
-        <NameForm/>
+        <Game/>
         <p className="App-intro">
-          Lets go {}.
         </p>
       </div>
     );
   }
 }
 
+class Game extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {name: ""};
+    this.updateName = this.updateName.bind(this);
+  }
+
+  updateName(state) {
+    this.setState(state);
+  }
+  render () {
+    return (<div>
+    <NameForm setName={this.updateName}/>
+    <div>
+      {JSON.stringify(this.state.value)}
+    </div>
+    </div>)
+  }
+}
+
 class NameForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {value: '', playerName: ''};
-
+    this.state = {value:"", playerName:""};
+    this.updateParentState = props.setName
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-
-      this.handleClick = this.handleClick.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handleClick(event) {
@@ -47,15 +58,26 @@ class NameForm extends React.Component {
 
   handleSubmit(event) {
 //    alert('A name was submitted: ' + this.state.value);
+
   this.setState({playerName: event.target.value});
-    event.preventDefault();
+  this.updateParentState(this.state)
+
+  let url = "https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/users/create?player_name=" + this.state.value
+  console.log(event.target.value)
+  console.log(url)
+
+  fetch(url)
+  .then(response => response.json())
+  .then(myJson => console.log(myJson))
+  .catch(error => console.error(error));
+
+  event.preventDefault();
   }
 
 
   render() {
-    console.log(this.state.value)
     const playerName = this.state.playerName
-    if (playerName == "") {
+    if (playerName === "") {
       return (
         <form onSubmit={this.handleSubmit}>
           <label>
@@ -67,13 +89,70 @@ class NameForm extends React.Component {
     }
     else
     {
-      return (<h2 onClick={this.handleClick}> {this.state.value}</h2>)
+      return (
+        <div>
+        <h2 onClick={this.handleClick}> {this.state.value}</h2>
+        <Quiz/>
+        </div>
+      )
     }
   }
 }
-const Greeting = (props) => (
-  <div>{props.toto}</div>
-)
+
+class Quiz extends React.Component {
+  constructor(props) {
+      super(props);
+      this.state = {question: "loading"};
+  }
+
+  componentDidMount() {
+    /*
+    fetch("http://xxx:8080/")
+    .then(response => response.json())
+    .then(myJson => this.setState({ loading: "", question: myJson.question }))
+    .catch(error => console.error(error));
+    */
+}
+
+sayYes(event) {
+  console.log("test say yes");
+  event.preventDefault();
+/*
+  fetch("http://xxx:8080/")
+  .then(response => response.json())
+  .then(myJson => this.setState({ }))
+  .catch(error => console.error(error));
+*/
+}
+
+sayNo(event) {
+  console.log("test say no");
+  event.preventDefault();
+
+/*
+  fetch("http://xxx:8080/")
+  .then(response => response.json())
+  .then(myJson => this.setState({ }))
+  .catch(error => console.error(error));
+  */
+}
+
+    render() {
+        return (
+            <div id="quiz">
+                <h1>Question : {this.state.question}</h1>
+                <button onClick={this.sayYes}>
+                Oui
+                </button>
+
+                <button onClick={this.sayNo}>
+                Non
+                </button>
+
+            </div>
+        );
+    }
+}
 
 
 export default App;
