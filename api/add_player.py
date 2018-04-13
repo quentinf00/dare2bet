@@ -10,12 +10,18 @@ def run(event, context):
     state['players'] = state.get('players', []) + [player_name]
     dump_state(s3, state)
 
-    response = {
-        "statusCode": 200,
+    response_headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': True,
+    }
+
+    return {
+        'headers': response_headers,
+        'statusCode': status_code,
         "body": json.dumps(state)
     }
 
-    return response
+
 
 
 def load_state(s3):
