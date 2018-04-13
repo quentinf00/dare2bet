@@ -1,38 +1,19 @@
+import json
+import urllib.request
 import boto3
 import json
 
+qdb_url = "https://opentdb.com/api.php?amount=1&type=boolean"
 
 def run(event, context):
-
+    
     s3 = boto3.client('s3')
     state = load_state(s3)
-    answers = state.get('answers', {})
-    players = state.get('players', [])
-
-    done = True
-    responded = []
-    waiting_for_response = []
-    for player in players:
-        if player in answers:
-            responded.append(player)
-        else:
-            done = False
-            waiting_for_response.append(player)
-
-    if not done:
-        result = {
-            'everybody_answered': done,
-            'already_responded': responded,
-            'waiting_for_response': waiting_for_response
-            }
-    else:
-        result = {
-            'should_drink': responded,
-            'should_not_drink': []
-            }
-        del state['answers']
-        del state['question']
-        dump_state(s3, state)
+    [question, answer] = next_question()
+    if not state.get('question', []):
+        state['question'] = question
+        state['correct_answer'] = answer
+    dump_state(s3, state)
 
     response_headers = {
         'Access-Control-Allow-Origin': '*',
@@ -42,8 +23,11 @@ def run(event, context):
     return {
         'headers': response_headers,
         'statusCode': 200,
-        "body": json.dumps(result)
+        "body": json.dumps( {"question": state['question'],
+            "answers": ['yes', 'no']})
     }
+
+
 
 
 def load_state(s3):
@@ -72,3 +56,18 @@ def dump_state(s3, state):
 
     with open('/tmp/state.json', 'rb') as data:
         s3.upload_fileobj(data, 'dare-to-bet-state-store', 'state.json')
+
+
+def next_question(url):
+    
+    print("Get a question from openTrivia")
+    request = urllib.request.urlopen(url)
+    trivia = json.loads(request.read())
+    results = trivia['results'][0]
+    category = results['category']
+    difficulty = results['difficulty']
+    print("Category : ", category, " level : ", difficulty)
+    question = results['question']
+    answer = results['correct_answer']
+    return [question, answer]
+
