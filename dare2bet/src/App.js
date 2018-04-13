@@ -30,9 +30,6 @@ class Game extends React.Component {
   render () {
     return (<div>
     <NameForm setName={this.updateName}/>
-    <div>
-      {JSON.stringify(this.state.value)}
-    </div>
     </div>)
   }
 }
@@ -56,6 +53,13 @@ class NameForm extends React.Component {
     this.setState({value: event.target.value});
   }
 
+  updatePlayers(players) {
+    console.log("updatePlayers")
+    console.log(players)
+
+   this.setState({players: players})
+  }
+
   handleSubmit(event) {
 //    alert('A name was submitted: ' + this.state.value);
 
@@ -63,12 +67,10 @@ class NameForm extends React.Component {
   this.updateParentState(this.state)
 
   let url = "https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/users/create?player_name=" + this.state.value
-  console.log(event.target.value)
-  console.log(url)
 
   fetch(url)
   .then(response => response.json())
-  .then(myJson => console.log(myJson))
+  .then(myJson => this.updatePlayers(myJson.players))
   .catch(error => console.error(error));
 
   event.preventDefault();
@@ -84,7 +86,9 @@ class NameForm extends React.Component {
             Votre nom :
             <input type="text" value={this.state.value} onChange={this.handleChange} />
           </label>
+          <div>{this.state.players}</div>
           <input type="submit" value="Submit" />
+
         </form>)
     }
     else
@@ -92,7 +96,10 @@ class NameForm extends React.Component {
       return (
         <div>
         <h2 onClick={this.handleClick}> {this.state.value}</h2>
-        <Quiz/>
+        <Quiz playerName={this.state.value}/>
+        <br/>
+        <br/>
+        {this.state.players?this.state.players.map((player, index)=>(<div key={index}>{player}</div>)):null}
         </div>
       )
     }
@@ -102,39 +109,41 @@ class NameForm extends React.Component {
 class Quiz extends React.Component {
   constructor(props) {
       super(props);
-      this.state = {question: "loading"};
+      this.state = {question: "loading", playerName : props.playerName};
+
+
+      this.sayYes = this.sayYes.bind(this);
+      this.sayNo = this.sayNo.bind(this);
+      this.saySomething = this.saySomething.bind(this);
   }
 
   componentDidMount() {
-    /*
-    fetch("http://xxx:8080/")
+
+    fetch("https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/get_question")
     .then(response => response.json())
     .then(myJson => this.setState({ loading: "", question: myJson.question }))
     .catch(error => console.error(error));
-    */
+
+}
+
+saySomething(answer) {
+
+  fetch("https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/post_answer?player_name=" + this.state.playerName + "&answer=" + answer)
+  .then(response => response.json())
+  .then(myJson => console.log(myJson))
+  .catch(error => console.error(error));
 }
 
 sayYes(event) {
-  console.log("test say yes");
+  console.log("[+] test say yes");
   event.preventDefault();
-/*
-  fetch("http://xxx:8080/")
-  .then(response => response.json())
-  .then(myJson => this.setState({ }))
-  .catch(error => console.error(error));
-*/
+  this.saySomething("yes");
 }
 
 sayNo(event) {
-  console.log("test say no");
+  console.log("[+] test say no");
   event.preventDefault();
-
-/*
-  fetch("http://xxx:8080/")
-  .then(response => response.json())
-  .then(myJson => this.setState({ }))
-  .catch(error => console.error(error));
-  */
+  this.saySomething("no");
 }
 
     render() {
