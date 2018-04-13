@@ -4,10 +4,14 @@ import json
 
 def run(event, context):
     player_name = event['queryStringParameters']['player_name']
+    answer = event['queryStringParameters']['answer']
 
     s3 = boto3.client('s3')
     state = load_state(s3)
-    state['players'] = state.get('players', []) + [player_name]
+    answers = state.get('answers', {})
+    answers[player_name] = answer
+    state['answers'] = answers
+
     dump_state(s3, state)
 
     response_headers = {
@@ -20,8 +24,6 @@ def run(event, context):
         'statusCode': 200,
         "body": json.dumps(state)
     }
-
-
 
 
 def load_state(s3):
