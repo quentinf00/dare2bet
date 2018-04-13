@@ -7,7 +7,9 @@ def run(event, context):
 
     s3 = boto3.client('s3')
     state = load_state(s3)
-    state['players'] = state.get('players', []) + [player_name]
+
+
+
     dump_state(s3, state)
 
     response_headers = {
@@ -18,7 +20,10 @@ def run(event, context):
     return {
         'headers': response_headers,
         'statusCode': 200,
-        "body": json.dumps(state)
+        "body": json.dumps({
+            "question": "Do you want to drink",
+            "answers": ['yes', 'no']
+        })
     }
 
 

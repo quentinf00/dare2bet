@@ -9,6 +9,9 @@ provider:
         - "s3:*"
       Resource:
           - "*"
+package:
+  exclude:
+    - venv/**
 functions:
   add_player:
     dependsOn: S3BucketState
@@ -21,6 +24,18 @@ functions:
           parameters:
             querystrings:
               player_name: true
+  reset_game:
+    handler: reset_game.run
+    events:
+    - http:
+        path: reset/game
+        method: get
+  get_question:
+    handler: get_question.run
+    events:
+    - http:
+        path: get_question
+        method: get
 
 resources:
   Resources:
