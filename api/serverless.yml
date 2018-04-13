@@ -47,6 +47,13 @@ functions:
             querystrings:
               player_name: true
               answer: true
+  get_result:
+    handler: get_result.run
+    events:
+    - http:
+        path: get_result
+        method: get
+
 resources:
   Resources:
     S3BucketState:
