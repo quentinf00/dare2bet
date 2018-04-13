@@ -3,9 +3,14 @@ service: dare2bet
 provider:
   name: aws
   runtime: python3.6
-
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource:
+          - "*"
 functions:
-  hello:
+  add_player:
     dependsOn: S3BucketState
     handler: add_player.run
     events:
