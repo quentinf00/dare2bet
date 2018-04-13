@@ -2,7 +2,9 @@ import boto3
 import json
 
 def run(event, context):
-    dump_state(s3, {}):
+    s3 = boto3.client('s3')
+
+    dump_state(s3, {})
 
     response_headers = {
         'Access-Control-Allow-Origin': '*',
@@ -12,8 +14,9 @@ def run(event, context):
     return {
         'headers': response_headers,
         'statusCode': 200,
-        "body": json.dumps(state)
+        "body": json.dumps({})
     }
+
 
 def dump_state(s3, state):
     print(f'Dumping state: {state}')
