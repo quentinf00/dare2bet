@@ -3,11 +3,6 @@ import json
 
 
 def run(event, context):
-<<<<<<< be2a95756079c60931c4de81af9545c2e944d815
-    player_name = event['queryStringParameters']['player_name']
-    answer = event['queryStringParameters']['answer']
-=======
->>>>>>> Adds get result route
 
     s3 = boto3.client('s3')
     state = load_state(s3)
