@@ -98,20 +98,27 @@ class NameForm extends React.Component {
         <h2 onClick={this.handleClick}> {this.state.value}</h2>
         <Quiz playerName={this.state.value}/>
         <br/>
-        <br/>
-        {this.state.players?this.state.players.map((player, index)=>(<div key={index}>{player}</div>)):null}
+            <PlayerList players={this.state.players}/>
         </div>
       )
     }
   }
 }
 
+class PlayerList extends React.Component {
+
+  render() {
+    return (
+      <div>
+        {this.props.players ? this.props.players.map((player, index) => (<div key={index}>{player}</div>)) : null}
+      </div>)
+  }
+}
+
 class Quiz extends React.Component {
   constructor(props) {
       super(props);
-      this.state = {question: "loading", playerName : props.playerName};
-
-
+      this.state = {question: "loading", playerName : props.playerName, answered : false};
       this.sayYes = this.sayYes.bind(this);
       this.sayNo = this.sayNo.bind(this);
       this.saySomething = this.saySomething.bind(this);
@@ -127,7 +134,7 @@ class Quiz extends React.Component {
 }
 
 saySomething(answer) {
-
+  this.setState({answered: true})
   fetch("https://hrwcgjdw3e.execute-api.us-east-1.amazonaws.com/dev/post_answer?player_name=" + this.state.playerName + "&answer=" + answer)
   .then(response => response.json())
   .then(myJson => console.log(myJson))
@@ -150,11 +157,11 @@ sayNo(event) {
         return (
             <div id="quiz">
                 <h1>Question : {this.state.question}</h1>
-                <button onClick={this.sayYes}>
+                <button onClick={this.sayYes} disabled={this.state.answered}>
                 Oui
                 </button>
 
-                <button onClick={this.sayNo}>
+                <button onClick={this.sayNo}  disabled={this.state.answered}>
                 Non
                 </button>
 
